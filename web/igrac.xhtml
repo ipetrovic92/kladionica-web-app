@@ -1,0 +1,154 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+    <h:head>
+        <title>Igrac panel</title>
+    </h:head>
+    <h:body>
+        <h:form id="frmIgrac" >
+            <p:growl id="poruke" for="poruke" />
+            <div style="position: fixed; top: 3%; left: 10%">
+                <p:panelGrid columns="4" >
+                    <h:outputLabel value=" Igrac " >
+                        #{mbIgrac.igrac.ime} #{mbIgrac.igrac.prezime}
+                    </h:outputLabel>
+                    <h:outputLabel value=" email: " >
+                        #{mbIgrac.igrac.emailIgrac} 
+                    </h:outputLabel>
+                    <h:outputLabel value=" stanje na racunu: " >
+                        #{mbIgrac.igrac.stanjeRacuna} 
+                    </h:outputLabel>
+                    <h:outputLabel value=" ukupno tiketa: ">
+                        #{mbIgrac.igrac.tiketCollection.size()} 
+                    </h:outputLabel>
+                </p:panelGrid>
+            </div>
+            <div style="position:fixed; top: 15%; left: 10%; " >
+                <h2>
+                    <p:commandButton value="Uplata tiketa" onclick="PF('uplatadlg').show();" style="height: 316px; width: 256px; background-image: url(resources/images/uplata_tiketa.png) !important; padding-top:275px; " />
+                    <p:commandButton value="Pregled tiketa" onclick="PF('tiketidlg').show();" style="height: 316px; width: 256px; background-image: url(resources/images/pregled_tiketa.png) !important; margin-left:120px; padding-top:275px; "  />
+                    <p:commandButton value="LOGOUT" action="#{mbIgrac.logout()}" style="height: 316px; width: 256px; background-image: url(resources/images/logout.png) !important; margin-left:120px; padding-top:275px; "  />
+                </h2>
+            </div>
+        </h:form>
+        <p:dialog header="Uplata tiketa" widgetVar="uplatadlg" modal="true" height="400" >
+            <div align="left" style="float: left; width: 55%; margin-right: 1%">
+                <h:form id="frmNova">  
+                    <p:panel header="Utakmica">
+                        <h:panelGrid id="pnlgUtakmica" columns="2">
+
+                            <p:outputLabel value="Odaberi utakmicu" />
+                            <p:selectOneMenu id="cmbUtakmica" value="#{mbIgrac.odabranaUtakmica}" converter="utakmicaCNV" >
+                                <f:selectItem itemValue="" itemLabel="Izaberi utakmicu" />
+                                <f:selectItems value="#{mbIgrac.sveUtakmice}" var="ut" itemValue="#{ut}" itemLabel="#{ut.klubDomacin.nazivKluba}:#{ut.klubGost.nazivKluba}" />
+                                <p:ajax update="kvota" oncomplete="#{mbIgrac.odabranaUtakmica = ut}"/>
+                                <p:ajax update="kvota" oncomplete="#{mbIgrac.updateKvota()}" />
+                            </p:selectOneMenu>
+
+                            <p:outputLabel value="Odaberi tip" />
+                            <p:selectOneRadio id="comboTip" value="#{mbIgrac.tip}" required="true" validatorMessage="Morate odabrati tip" >
+                                <f:selectItem itemLabel="0" itemValue="0" />
+                                <f:selectItem itemLabel="1" itemValue="1" />
+                                <f:selectItem itemLabel="2" itemValue="2" />
+                                <p:ajax update="kvota" oncomplete="#{mbIgrac.updateKvota()}" />
+                            </p:selectOneRadio>
+
+                        </h:panelGrid>
+                        <p:panel id="kvota" visible="true" rendered="true" >
+                            <p:outputLabel value="Odabrani tip: #{mbIgrac.tip}, kvota: #{mbIgrac.kvota}" />
+                        </p:panel>
+                        <br/>
+
+                        <f:facet name="footer">
+                            <p:commandButton value="Dodaj utakmicu na tiket" update=":frmIgrac:poruke :frmUneteUtakmice:tabelatiket" icon="ui-icon-plus" actionListener="#{mbIgrac.novaUtakmicaZaTiket}" >
+                                <p:ajax update=":frmUneteUtakmice:tabelatiket" />
+                            </p:commandButton>
+                        </f:facet>
+                    </p:panel>
+                </h:form>
+            </div>
+
+            <h:form id="frmUneteUtakmice">
+                <p:growl id="poruke" />
+                <div align="left" style="float: left;width: 44%;" >
+                    <p:panel header="Tabela utakmica na tiketu">
+                        <p:dataTable value="#{mbIgrac.utakmiceNaTiketu}" var="u" rows="5" paginator="true"
+                                     id="tabelatiket" widgetVar="tabelatiket" rowKey="#{u.tiketutakmicaPK}" >
+                            <p:column headerText="Utakmica" >
+                                <p:outputLabel value="#{u.utakmica}" />
+                            </p:column>
+                            <p:column headerText="Tip" style="width: 10%" >
+                                <p:outputLabel value="#{u.tip}" />
+                            </p:column>
+                            <p:column headerText="Kvota" style="width: 10%" >
+                                <p:outputLabel value="#{u.kvota}" />
+                            </p:column>
+                        </p:dataTable>
+                        <p:outputLabel value="Uplata: " />
+                        <p:spinner id="ajaxSpinner" stepFactor="10" value="#{mbIgrac.uplata}" >
+                            <p:ajax update="isplata" process="@this" />
+                        </p:spinner>
+
+                        <p:outputLabel value="Moguca isplata: " />
+                        <p:outputLabel id="isplata" value="#{mbIgrac.isplata}" />
+
+                        <p:commandButton value="Sacuvaj tiket" action="#{mbIgrac.sacuvajTiket()}" ajax="false" />
+                    </p:panel>
+                </div>
+            </h:form>
+        </p:dialog>
+        <h:form id="frmDialog2">
+            <p:dialog header="Pregled tiketa" widgetVar="tiketidlg" modal="true" height="400">
+                <p:dataTable value="#{mbIgrac.igrac.tiketCollection}" var="t" rows="5" paginator="true"
+                             widgetVar="tabelatiketa" rowKey="#{t.tiketPK.sifraTiketa}"  selectionMode="single" selection="#{mbIgrac.odabraniTiket}">
+                    <p:ajax event="rowSelect" listener="#{mbIgrac.tiketJeOdabran}" update=":frmDialog2:tabelautakmica" />
+                    <p:column headerText="Sifra tiketa" sortBy="#{t.tiketPK.sifraTiketa}" >
+                        <p:outputLabel value="#{t.tiketPK.sifraTiketa}"/>
+                    </p:column>
+                    <p:column headerText="Datum igranja" sortBy="#{t.datumIgranja}" >
+                        <p:outputLabel value="#{t.datumIgranja}" >
+                            <f:convertDateTime pattern="dd/MM/yyyy" />
+                        </p:outputLabel>
+                    </p:column>
+                    <p:column headerText="Uplata" sortBy="#{t.uplata}" >
+                        <p:outputLabel value="#{t.uplata}"/>
+                    </p:column>
+                    <p:column headerText="Kvota" sortBy="#{t.ukupnaKvota}" >
+                        <p:outputLabel value="#{t.ukupnaKvota}"/>
+                    </p:column>
+                    <p:column headerText="Status" sortBy="#{t.statusID.status}" >
+                        <p:outputLabel value="#{t.statusID.status}"/>
+                    </p:column>
+                    <p:column headerText="Moguci dobitak" sortBy="#{t.moguciDobitak}" >
+                        <p:outputLabel value="#{t.moguciDobitak}"/>
+                    </p:column>
+                    <p:column headerText="Broj utakmica" >
+                        <p:outputLabel value="#{t.tiketutakmicaCollection.size()}"/>
+                    </p:column>
+                </p:dataTable>
+                <p:dataTable value="#{mbIgrac.odabraniTiket.tiketutakmicaCollection}" var="tu" rows="5" paginator="true"
+                             id="tabelautakmica" widgetVar="tabelautakmica" rowKey="#{tu.tiketutakmicaPK.sifraUtakmice}" >
+                    <p:column headerText="Utakmica" style="width: 50%">
+                        <p:outputLabel value="#{tu.utakmica}"/>
+                    </p:column>
+                    <p:column headerText="Tip" >
+                        <p:outputLabel value="#{tu.tip}"/>
+                    </p:column>
+                    <p:column headerText="Rezultat" >
+                        <p:outputLabel value="#{tu.utakmica.rezultat}"/>
+                    </p:column>
+                    <p:column headerText="Status" >
+                        <p:outputLabel value="#{tu.statusID.status}"/>
+                    </p:column>
+                    <p:column headerText="Kvota" >
+                        <p:outputLabel value="#{tu.kvota}"/>
+                    </p:column>
+                </p:dataTable>
+            </p:dialog>  
+        </h:form>
+    </h:body>
+</html>
+

@@ -1,0 +1,82 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+    <h:head>
+        <title>Online kladionica</title>
+    </h:head>
+    <h:body>
+        <h:form id="frmPocetna" >
+            <p:growl id="successMsg" for="successMsg" />
+            <div style="position:fixed; top: 15%; left: 10%; " >
+                <h2>
+                    <p:commandButton value="Admin login" onclick="PF('admindlg').show();" style="height: 316px; width: 256px; background-image: url(resources/images/admin.png) !important; padding-top:275px; " />
+                    <p:commandButton value="Igrac login" onclick="PF('userdlg').show();" style="height: 316px; width: 256px; background-image: url(resources/images/user.png) !important; margin-left:120px; padding-top:275px; "  />
+                    <p:commandButton value="Novi igrac" onclick="PF('newdlg').show();" style="height: 316px; width: 256px; background-image: url(resources/images/add_user.png) !important; margin-left:120px; padding-top:275px; "  />
+                </h2>
+            </div>
+        </h:form>
+        <h:form id="frmDialog">
+            <p:dialog header="Admin login" widgetVar="admindlg" modal="true" height="200">
+                <p:panelGrid columns="2">
+                    <p:outputLabel value="Email" />
+                    <p:inputText id="adminemail" value="#{mbAdmin.admin.emailAdministrator}" />
+                    <p:outputLabel value="Lozinka" />
+                    <p:password id="adminloz" value="#{mbAdmin.admin.lozinka}" />
+                    <p:commandButton id="btnadminlogin" value="Uloguj se" action="#{mbAdmin.login()}" ajax="false"/>
+                </p:panelGrid>
+            </p:dialog>
+        </h:form>
+        <h:form id="frmDialog2">
+            <p:dialog header="Igrac login" widgetVar="userdlg" modal="true" height="200">
+                <p:panelGrid columns="2">
+                    <p:outputLabel value="Email" />
+                    <p:inputText id="inemail" value="#{mbIgrac.igrac.emailIgrac}" />
+                    <p:outputLabel value="Lozinka" />
+                    <p:password id="inloz" value="#{mbIgrac.igrac.lozinka}" />
+                    <p:commandButton id="btnigraclogin" value="Uloguj se" action="#{mbIgrac.login()}" ajax="false"/>
+                </p:panelGrid>
+            </p:dialog>  
+        </h:form>
+
+        <p:dialog header="Registracija novog korisnika" widgetVar="newdlg" modal="true" height="300">
+            <h:form id="frmDialog3">
+                <p:panelGrid columns="3">
+                    <p:outputLabel value="Email" />
+                    <p:inputText id="inputemail" value="#{mbIgrac.noviIgrac.emailIgrac}" validatorMessage="Obavezno polje" >
+                        <f:validateLength minimum="5" />
+                    </p:inputText>
+                    <p:message for="inputemail" />
+
+                    <p:outputLabel value="Ime" />
+                    <p:inputText id="inputime" value="#{mbIgrac.noviIgrac.ime}" validatorMessage="Obavezno polje" >
+                        <f:validateLength minimum="1" />
+                    </p:inputText>
+                    <p:message for="inputime" />
+
+                    <p:outputLabel value="Prezime" />
+                    <p:inputText id="inputprez" value="#{mbIgrac.noviIgrac.prezime}" validatorMessage="Obavezno polje" >
+                        <f:validateLength minimum="1"  />
+                    </p:inputText>
+                    <p:message for="inputprez" />
+
+                    <p:outputLabel value="Datum rodjenja" />
+                    <p:calendar id="inputdat" pattern="dd/MM/yyyy" value="#{mbIgrac.noviIgrac.datumRodjenja}" validatorMessage="Obavezno"/>
+                    <p:message for="inputdat" />
+
+                    <p:outputLabel value="Lozinka" />
+                    <p:password id="inputloz" value="#{mbIgrac.noviIgrac.lozinka}" validatorMessage="Obavezno polje" >
+                        <f:validateLength minimum="1" />
+                    </p:password>
+                    <p:message for="inputloz" />
+                </p:panelGrid>
+
+                <p:commandButton id="btnreg" value="Registruj se" action="#{mbIgrac.registrujNovogIgraca()}" ajax="false"/>
+            </h:form>
+        </p:dialog>  
+
+    </h:body>
+</html>
+

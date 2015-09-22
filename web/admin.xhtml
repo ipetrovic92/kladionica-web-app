@@ -1,0 +1,129 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+    <h:head>
+        <title>Admin panel</title>
+    </h:head>
+    <h:body>
+        <h:form id="frmAdmin" >
+            <p:growl id="poruke" for="poruke" />
+            <div style="position: fixed; top: 3%; left: 10%">
+                <p:panelGrid columns="3" >
+                    <h:outputLabel value=" Admin " >
+                        #{mbAdmin.admin.ime} #{mbAdmin.admin.prezime}
+                    </h:outputLabel>
+                    <h:outputLabel value=" email: " >
+                        #{mbAdmin.admin.emailAdministrator} 
+                    </h:outputLabel>
+                    <p:commandButton value="LOGOUT" action="#{mbAdmin.logout()}" />
+                </p:panelGrid>
+            </div>
+            <div style="position:fixed; top: 15%; left: 10%; " >
+                <h2>
+                    <p:commandButton value="Unos utakmica" onclick="PF('unosUtakmicaDlg').show();" style="height: 316px; width: 256px; background-image: url(resources/images/unos_utakmice.png) !important; padding-top:275px; " />
+                    <p:commandButton value="Pregled utakmica" onclick="PF('pregledUtakmicaDlg').show();" style="height: 316px; width: 256px; background-image: url(resources/images/pretraga_utakmica.png) !important; margin-left:120px; padding-top:246px; "  />
+                    <p:commandButton value="Pregled igraca" onclick="PF('pregledIgracaDlg').show();" style="height: 316px; width: 256px; background-image: url(resources/images/pretraga_igraca.png) !important; margin-left:120px; padding-top:275px; " />
+                </h2>
+            </div>
+        </h:form>
+
+        <p:dialog header="Unos nove utakmice" widgetVar="unosUtakmicaDlg" modal="true" height="200">
+            <h:form id="unosUtFrm">
+                <p:panelGrid columns="6">
+                    <p:outputLabel value="Domacin:" />
+                    <p:selectOneMenu widgetVar="cmbDom" id="cmbDom" value="#{mbAdmin.novaUtakmica.klubDomacin}" converter="klubCNV" >
+                        <f:selectItem itemValue="" itemLabel="Izaberi klub domacina" />
+                        <f:selectItems value="#{mbKlubovi.kolekcijaKlubova}" var="kd" itemValue="#{kd}" itemLabel="#{kd}" />
+                    </p:selectOneMenu>
+                    <p:message for="cmbDom" />
+                    <p:outputLabel value="kvota:" />
+                    <p:spinner id="inputKvotaDomacin" stepFactor="0.01" value="#{mbAdmin.novaUtakmica.kvotaDomacin}" validatorMessage="Vrednost mora biti izmedju 1.01 i 5000" >
+                        <f:validateDoubleRange minimum="1.01" maximum="5000" />
+                    </p:spinner>
+                    <p:message for="inputKvotaDomacin" />
+
+                    <p:outputLabel value="Gost:" />
+                    <p:selectOneMenu id="cmbGost" widgetVar="cmbGost" value="#{mbAdmin.novaUtakmica.klubGost}" converter="klubCNV" >
+                        <f:selectItem itemValue="#{null}" itemLabel="Izaberi klub gosta" />
+                        <f:selectItems value="#{mbKlubovi.kolekcijaKlubova}" var="kg" itemValue="#{kg}" itemLabel="#{kg}" />
+                    </p:selectOneMenu>
+                    <p:message for="cmbGost" />
+                    <p:outputLabel value="kvota:" />
+                    <p:spinner id="inputKvotaGost" stepFactor="0.01" value="#{mbAdmin.novaUtakmica.kvotaGost}" validatorMessage="Vrednost mora biti izmedju 1.01 i 5000" >
+                        <f:validateDoubleRange minimum="1.01" maximum="5000" />
+                    </p:spinner>
+                    <p:message for="inputKvotaGost" />
+
+                    <p:outputLabel value="Datum:" />
+                    <p:calendar id="datum" widgetVar="datum" value="#{mbAdmin.novaUtakmica.vremeUtakmice}" pattern="dd/MM/yyyy" />
+                    <p:message for="datum" />
+                    <p:outputLabel value="kvota nereseno:" />
+                    <p:spinner id="inputKvotaNer" stepFactor="0.01" value="#{mbAdmin.novaUtakmica.kvotaNereseno}" validatorMessage="Vrednost mora biti izmedju 1.01 i 5000" >
+                        <f:validateDoubleRange minimum="1.01" maximum="5000" />
+                    </p:spinner>
+                    <p:message for="inputKvotaNer" />
+
+                </p:panelGrid>
+
+                <p:commandButton id="btnSacuvaj" value="Sacuvaj utakmicu" action="#{mbAdmin.sacuvajNovuUtakmicu()}" ajax="false"/>
+            </h:form>
+        </p:dialog>  
+
+        <p:dialog header="Pregled utakmica" widgetVar="pregledUtakmicaDlg" modal="true" height="400">
+            <h:form id="pregledUtakmicaFrm">
+                <p:dataTable value="#{mbAdmin.sveUtakmice}" var="u" rows="5" paginator="true"
+                             widgetVar="tabelautakmica" rowKey="#{u.sifraUtakmice}"  selectionMode="single" selection="#{mbAdmin.odabranaUtakmica}">
+                    <p:ajax event="rowSelect" listener="#{mbAdmin.utakmicaOdabrana}" update=":frmIzmenaUtakmica" />
+                    <p:column headerText="Datum" sortBy="#{u.vremeUtakmice}" >
+                        <p:outputLabel value="#{u.vremeUtakmice}" >
+                            <f:convertDateTime pattern="dd/MM/yyyy" />
+                        </p:outputLabel>
+                    </p:column>
+                    <p:column headerText="Domacin" sortBy="#{u.klubDomacin}" >
+                        <p:outputLabel value="#{u.klubDomacin}" />
+                    </p:column>
+                    <p:column headerText="Gost" sortBy="#{u.klubGost}" >
+                        <p:outputLabel value="#{u.klubGost}" />
+                    </p:column>
+                    <p:column headerText="Rezultat" >
+                        <p:outputLabel value="#{u.rezultat}"/>
+                    </p:column>
+                </p:dataTable>
+            </h:form>
+            <p:separator />
+            <h:form id="frmIzmenaUtakmica" >
+                <p:outputLabel value="Unesi rezultat: " />
+                <p:inputText value="#{mbAdmin.odabranaUtakmica.rezultat}" />
+                <p:commandButton value="Sacuvaj rezultat utakmice" action="#{mbAdmin.sacuvajRezultatUtakmice()}" ajax="false" />
+            </h:form>
+        </p:dialog>  
+
+        <p:dialog header="Pregled igraca" widgetVar="pregledIgracaDlg" modal="true" height="400">
+            <h:form id="pregledIgracaFrm">
+                <p:dataTable value="#{mbAdmin.sviIgraci}" var="i" rows="5" paginator="true"
+                             widgetVar="tabelaigraca" rowKey="#{i.emailIgrac}"  selectionMode="single" selection="#{mbAdmin.odabraniIgrac}">
+                    <p:ajax event="rowSelect" listener="#{mbAdmin.igracOdabran}" update=":frmIzmenaIgraca" />
+                    <p:column headerText="Email" sortBy="#{i.emailIgrac}" >
+                        <p:outputLabel value="#{i.emailIgrac}" />
+                    </p:column>
+                    <p:column headerText="Ime i prezime" sortBy="#{i.ime}" >
+                        <p:outputLabel value="#{i.ime} #{i.prezime}" />
+                    </p:column>
+                    <p:column headerText="Stanje na racunu" sortBy="#{i.stanjeRacuna}" >
+                        <p:outputLabel value="#{i.stanjeRacuna}" />
+                    </p:column>
+                </p:dataTable>
+            </h:form>
+            <p:separator />
+            <h:form id="frmIzmenaIgraca" >
+                <p:outputLabel value="Unesi novo stanje: " />
+                <p:spinner value="#{mbAdmin.odabraniIgrac.stanjeRacuna}" />
+                <p:commandButton value="Sacuvaj novo stanje" action="#{mbAdmin.sacuvajNovoStanjeRacuna()}" ajax="false" />
+            </h:form>
+        </p:dialog>  
+    </h:body>
+</html>
+
